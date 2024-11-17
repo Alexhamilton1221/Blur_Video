@@ -14,13 +14,9 @@ if not os.path.exists(videos_dir):
     os.makedirs(videos_dir)
 
 # Function to process the video
-def process_video(input_name, output_name, non_blur_duration, blur_duration, output_dir):
-    # Default to looking in the 'videos' folder
-    input_video = os.path.join(videos_dir, input_name)
-
-    # Validate input file
-    if not os.path.isfile(input_video):
-        messagebox.showerror("Error", f"Input file '{input_name}' does not exist in the 'videos' folder.")
+def process_video(input_path, output_name, non_blur_duration, blur_duration, output_dir):
+    if not os.path.isfile(input_path):
+        messagebox.showerror("Error", f"The input file does not exist: {input_path}")
         return
 
     # Ensure the output video name ends with a valid extension
@@ -32,7 +28,7 @@ def process_video(input_name, output_name, non_blur_duration, blur_duration, out
 
     try:
         # Open the input video using moviepy
-        clip = mp.VideoFileClip(input_video)
+        clip = mp.VideoFileClip(input_path)
 
         # Extract audio from the original video
         audio = clip.audio
@@ -59,16 +55,22 @@ def process_video(input_name, output_name, non_blur_duration, blur_duration, out
 # Create the Tkinter GUI
 def create_gui():
     def on_process():
-        input_name = input_entry.get().strip()
+        input_path = input_file_var.get().strip()
         output_name = output_entry.get().strip()
         non_blur_duration = int(non_blur_spinner.get())
         blur_duration = int(blur_spinner.get())
         output_dir = output_dir_var.get()
 
-        if not input_name or not output_name:
-            messagebox.showerror("Error", "Both input and output file names are required.")
+        if not input_path or not output_name:
+            messagebox.showerror("Error", "Both input file and output file name are required.")
         else:
-            process_video(input_name, output_name, non_blur_duration, blur_duration, output_dir)
+            process_video(input_path, output_name, non_blur_duration, blur_duration, output_dir)
+
+    def select_input_file():
+        input_path = filedialog.askopenfilename(initialdir=videos_dir, title="Select Input Video File",
+                                                filetypes=[("Video Files", "*.mp4 *.mkv *.avi")])
+        if input_path:
+            input_file_var.set(input_path)
 
     def select_output_dir():
         selected_dir = filedialog.askdirectory(initialdir=videos_dir, title="Select Output Directory")
@@ -79,10 +81,13 @@ def create_gui():
     root = tk.Tk()
     root.title("Blur Video Processor")
 
-    # Input file label and entry
-    tk.Label(root, text="Input File Name (e.g., input_video.mp4):").grid(row=0, column=0, padx=10, pady=5, sticky="w")
-    input_entry = tk.Entry(root, width=40)
-    input_entry.grid(row=0, column=1, padx=10, pady=5)
+    # Input file selection
+    tk.Label(root, text="Input Video File:").grid(row=0, column=0, padx=10, pady=5, sticky="w")
+    input_file_var = tk.StringVar()
+    input_file_entry = tk.Entry(root, textvariable=input_file_var, width=40, state="readonly")
+    input_file_entry.grid(row=0, column=1, padx=10, pady=5, sticky="w")
+    input_file_button = tk.Button(root, text="Browse", command=select_input_file)
+    input_file_button.grid(row=0, column=2, padx=10, pady=5, sticky="w")
 
     # Output file label and entry
     tk.Label(root, text="Output File Name (e.g., output_video.mp4):").grid(row=1, column=0, padx=10, pady=5, sticky="w")
@@ -90,7 +95,7 @@ def create_gui():
     output_entry.grid(row=1, column=1, padx=10, pady=5)
 
     # Default extension label
-    tk.Label(root, text="* If no extension is provided, '.mp4' will be used by default.", fg="gray").grid(row=2, column=0, columnspan=2, padx=10, pady=5)
+    tk.Label(root, text="* If no extension is provided, '.mp4' will be used by default.", fg="gray").grid(row=2, column=0, columnspan=3, padx=10, pady=5)
 
     # Output directory label and selection
     tk.Label(root, text="Output Directory:").grid(row=3, column=0, padx=10, pady=5, sticky="w")
