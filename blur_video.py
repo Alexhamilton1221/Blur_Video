@@ -9,7 +9,7 @@ import moviepy.editor as mp
 script_dir = os.path.dirname(os.path.abspath(__file__))
 videos_dir = os.path.join(script_dir, 'videos')
 
-# Make sure the 'videos' directory exists
+# Ensure the 'videos' directory exists
 if not os.path.exists(videos_dir):
     os.makedirs(videos_dir)
 
@@ -19,11 +19,15 @@ def process_video(input_path, output_name, non_blur_duration, blur_duration, out
         messagebox.showerror("Error", f"The input file does not exist: {input_path}")
         return
 
-    # Ensure the output video name ends with a valid extension
+    # Use default output name if none is provided
+    if not output_name.strip():
+        output_name = "output_video.mp4"
+
+    # Ensure the output video name has a valid extension
     if not output_name.endswith(('.mp4', '.mkv', '.avi')):
         output_name += ".mp4"
 
-    # Check the full output video path
+    # Construct full output video path
     output_video = os.path.join(output_dir, output_name)
 
     try:
@@ -61,8 +65,8 @@ def create_gui():
         blur_duration = int(blur_spinner.get())
         output_dir = output_dir_var.get()
 
-        if not input_path or not output_name:
-            messagebox.showerror("Error", "Both input file and output file name are required.")
+        if not input_path:
+            messagebox.showerror("Error", "Input video file is required.")
         else:
             process_video(input_path, output_name, non_blur_duration, blur_duration, output_dir)
 
@@ -90,36 +94,33 @@ def create_gui():
     input_file_button.grid(row=0, column=2, padx=10, pady=5, sticky="w")
 
     # Output file label and entry
-    tk.Label(root, text="Output File Name (e.g., output_video.mp4):").grid(row=1, column=0, padx=10, pady=5, sticky="w")
+    tk.Label(root, text="Output File Name (Default: output_video.mp4):").grid(row=1, column=0, padx=10, pady=5, sticky="w")
     output_entry = tk.Entry(root, width=40)
     output_entry.grid(row=1, column=1, padx=10, pady=5)
 
-    # Default extension label
-    tk.Label(root, text="* If no extension is provided, '.mp4' will be used by default.", fg="gray").grid(row=2, column=0, columnspan=3, padx=10, pady=5)
-
     # Output directory label and selection
-    tk.Label(root, text="Output Directory:").grid(row=3, column=0, padx=10, pady=5, sticky="w")
+    tk.Label(root, text="Output Directory:").grid(row=2, column=0, padx=10, pady=5, sticky="w")
     output_dir_var = tk.StringVar(value=videos_dir)
     output_dir_entry = tk.Entry(root, textvariable=output_dir_var, width=40, state="readonly")
-    output_dir_entry.grid(row=3, column=1, padx=10, pady=5, sticky="w")
+    output_dir_entry.grid(row=2, column=1, padx=10, pady=5, sticky="w")
     output_dir_button = tk.Button(root, text="Browse", command=select_output_dir)
-    output_dir_button.grid(row=3, column=2, padx=10, pady=5, sticky="w")
+    output_dir_button.grid(row=2, column=2, padx=10, pady=5, sticky="w")
 
     # Non-blur duration label and spinner
-    tk.Label(root, text="Non-Blur Period (seconds):").grid(row=4, column=0, padx=10, pady=5, sticky="w")
+    tk.Label(root, text="Non-Blur Period (seconds):").grid(row=3, column=0, padx=10, pady=5, sticky="w")
     non_blur_spinner = ttk.Spinbox(root, from_=1, to=60, width=5)
     non_blur_spinner.set(20)  # Default value
-    non_blur_spinner.grid(row=4, column=1, padx=10, pady=5, sticky="w")
+    non_blur_spinner.grid(row=3, column=1, padx=10, pady=5, sticky="w")
 
     # Blur duration label and spinner
-    tk.Label(root, text="Blur Period (seconds):").grid(row=5, column=0, padx=10, pady=5, sticky="w")
+    tk.Label(root, text="Blur Period (seconds):").grid(row=4, column=0, padx=10, pady=5, sticky="w")
     blur_spinner = ttk.Spinbox(root, from_=1, to=60, width=5)
     blur_spinner.set(20)  # Default value
-    blur_spinner.grid(row=5, column=1, padx=10, pady=5, sticky="w")
+    blur_spinner.grid(row=4, column=1, padx=10, pady=5, sticky="w")
 
     # Process button
     process_button = tk.Button(root, text="Process Video", command=on_process)
-    process_button.grid(row=6, column=0, columnspan=3, pady=10)
+    process_button.grid(row=5, column=0, columnspan=3, pady=10)
 
     # Start the Tkinter event loop
     root.mainloop()
