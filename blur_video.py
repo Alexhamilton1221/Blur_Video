@@ -12,6 +12,7 @@ if not os.path.exists(videos_dir):
     os.makedirs(videos_dir)
 
 # Function to process video with user-defined box
+# Function to process video with user-defined box
 def process_video(input_video, output_video, no_blur_duration, blur_duration, x1, y1, x2, y2, time_intervals=None):
     try:
         # Process video frames
@@ -38,8 +39,8 @@ def process_video(input_video, output_video, no_blur_duration, blur_duration, x1
 
             if time_intervals:  # Use time intervals mode
                 if interval_index < len(time_intervals):
-                    # Check if it's time to apply blur for the current interval
-                    if time_intervals[interval_index][0] <= frame_index / fps < time_intervals[interval_index][1]:
+                    # Apply blur everywhere except during the specified intervals
+                    if not (time_intervals[interval_index][0] <= frame_index / fps < time_intervals[interval_index][1]):
                         blurred_frame = cv2.GaussianBlur(frame, (51, 51), 0)
                         blurred_frame[y1:y2, x1:x2] = frame[y1:y2, x1:x2]
                         frame = blurred_frame
@@ -48,7 +49,10 @@ def process_video(input_video, output_video, no_blur_duration, blur_duration, x1
                     if frame_index / fps >= time_intervals[interval_index][1]:
                         interval_index += 1
                 else:
-                    # No more intervals, stop applying blur
+                    # Apply blur for the rest of the video after all intervals
+                    blurred_frame = cv2.GaussianBlur(frame, (51, 51), 0)
+                    blurred_frame[y1:y2, x1:x2] = frame[y1:y2, x1:x2]
+                    frame = blurred_frame
                     frame_index += 1
             else:  # Use blur cycles mode
                 def apply_blur_logic(frame, t):
@@ -62,7 +66,6 @@ def process_video(input_video, output_video, no_blur_duration, blur_duration, x1
                 frame_time = frame_index / fps  # Calculate current time
                 frame = apply_blur_logic(frame, frame_time)
                 frame_index += 1
-
 
             out.write(frame)
 
@@ -82,7 +85,7 @@ def process_video(input_video, output_video, no_blur_duration, blur_duration, x1
 
     except Exception as e:
         messagebox.showerror("Error", f"An error occurred: {str(e)}")
-
+  
 # GUI Application
 def start_gui():
     def select_input_file():
@@ -166,7 +169,7 @@ def start_gui():
 
     window = tk.Tk()
     window.title("Video Blurring Tool")
-    window.geometry("600x500")  # Increased window size to fit all components
+    window.geometry("800x500")  # Increased window size to fit all components
 
     # Initialize default video dimensions
     global width, height
@@ -197,7 +200,7 @@ def start_gui():
     tk.Radiobutton(window, text="Time Intervals", variable=mode_var, value=1, command=toggle_mode).grid(row=3, column=2)
 
     # Time Intervals Box
-    Label(window, text="Time Intervals (e.g., 10-20,30-40):").grid(row=6, column=0, padx=10, pady=10, sticky="w")
+    Label(window, text="Time Intervals (e.g., 10-20,30-40) seconds for unblur:").grid(row=6, column=0, padx=10, pady=10, sticky="w")
     time_intervals_var = tk.StringVar()
     time_intervals_box = Entry(window, textvariable=time_intervals_var, width=40)
 
@@ -216,9 +219,9 @@ def start_gui():
     # Coordinates for blur area
     Label(window, text="Coordinates for Blur Area (x1, y1, x2, y2):").grid(row=7, column=0, padx=10, pady=10, sticky="w")
     x1_var = tk.IntVar(value=100)
-    y1_var = tk.IntVar(value=100)
-    x2_var = tk.IntVar(value=300)
-    y2_var = tk.IntVar(value=300)
+    y1_var = tk.IntVar(value=350)
+    x2_var = tk.IntVar(value=600)
+    y2_var = tk.IntVar(value=600)
 
     # Create a frame for better organization of the coordinate spinboxes
     coordinates_frame = tk.Frame(window)
