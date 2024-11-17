@@ -51,11 +51,18 @@ def process_video(input_video, output_video, no_blur_duration, blur_duration, x1
                     # No more intervals, stop applying blur
                     frame_index += 1
             else:  # Use blur cycles mode
-                if (frame_index // blur_duration) % 2 == 1:
-                    blurred_frame = cv2.GaussianBlur(frame, (51, 51), 0)
-                    blurred_frame[y1:y2, x1:x2] = frame[y1:y2, x1:x2]
-                    frame = blurred_frame
+                def apply_blur_logic(frame, t):
+                    total_duration = no_blur_duration + blur_duration
+                    if int(t) % total_duration >= no_blur_duration:  # Apply blur after no-blur period
+                        blurred_frame = cv2.GaussianBlur(frame, (51, 51), 0)
+                        blurred_frame[y1:y2, x1:x2] = frame[y1:y2, x1:x2]
+                        return blurred_frame
+                    return frame
+
+                frame_time = frame_index / fps  # Calculate current time
+                frame = apply_blur_logic(frame, frame_time)
                 frame_index += 1
+
 
             out.write(frame)
 
