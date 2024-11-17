@@ -2,6 +2,7 @@ import cv2
 import os
 import tkinter as tk
 from tkinter import messagebox
+from tkinter import ttk
 import moviepy.editor as mp
 
 # Get the directory of the current script
@@ -13,7 +14,7 @@ if not os.path.exists(videos_dir):
     os.makedirs(videos_dir)
 
 # Function to process the video
-def process_video(input_name, output_name):
+def process_video(input_name, output_name, non_blur_duration, blur_duration):
     # Default to looking in the 'videos' folder
     input_video = os.path.join(videos_dir, input_name)
 
@@ -39,8 +40,8 @@ def process_video(input_name, output_name):
         # Apply blur effect to the video
         def apply_blur(get_frame, t):
             frame = get_frame(t)  # Get frame at time t
-            blur_duration = 20  # blur every 20 seconds alternately
-            if int(t) // blur_duration % 2 == 1:  # Apply blur every 20 seconds alternately
+            total_duration = non_blur_duration + blur_duration
+            if int(t) % total_duration >= non_blur_duration:  # Apply blur after the non-blur period
                 frame = cv2.GaussianBlur(frame, (51, 51), 0)
             return frame
 
@@ -60,11 +61,13 @@ def create_gui():
     def on_process():
         input_name = input_entry.get().strip()
         output_name = output_entry.get().strip()
+        non_blur_duration = int(non_blur_spinner.get())
+        blur_duration = int(blur_spinner.get())
         
         if not input_name or not output_name:
             messagebox.showerror("Error", "Both input and output file names are required.")
         else:
-            process_video(input_name, output_name)
+            process_video(input_name, output_name, non_blur_duration, blur_duration)
 
     # Main Tkinter window
     root = tk.Tk()
@@ -83,9 +86,21 @@ def create_gui():
     # Default extension label
     tk.Label(root, text="* If no extension is provided, '.mp4' will be used by default.", fg="gray").grid(row=2, column=0, columnspan=2, padx=10, pady=5)
 
+    # Non-blur duration label and spinner
+    tk.Label(root, text="Non-Blur Period (seconds):").grid(row=3, column=0, padx=10, pady=5, sticky="w")
+    non_blur_spinner = ttk.Spinbox(root, from_=1, to=60, width=5)
+    non_blur_spinner.set(20)  # Default value
+    non_blur_spinner.grid(row=3, column=1, padx=10, pady=5, sticky="w")
+
+    # Blur duration label and spinner
+    tk.Label(root, text="Blur Period (seconds):").grid(row=4, column=0, padx=10, pady=5, sticky="w")
+    blur_spinner = ttk.Spinbox(root, from_=1, to=60, width=5)
+    blur_spinner.set(20)  # Default value
+    blur_spinner.grid(row=4, column=1, padx=10, pady=5, sticky="w")
+
     # Process button
     process_button = tk.Button(root, text="Process Video", command=on_process)
-    process_button.grid(row=3, column=0, columnspan=2, pady=10)
+    process_button.grid(row=5, column=0, columnspan=2, pady=10)
 
     # Start the Tkinter event loop
     root.mainloop()
