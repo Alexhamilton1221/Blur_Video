@@ -11,19 +11,9 @@ videos_dir = os.path.join(script_dir, 'videos')
 if not os.path.exists(videos_dir):
     os.makedirs(videos_dir)
 
-# Function to get exclusion zone coordinates
-def get_exclusion_zone():
-    # Example coordinates for an exclusion zone
-    # Top-left corner (x1, y1), Bottom-right corner (x2, y2)
-    return 50, 50, 250, 250  # Modify these values as needed
-
-# Function to process video with audio
-def process_video(input_video, output_video, no_blur_duration, blur_duration):
+# Function to process video with user-defined box
+def process_video(input_video, output_video, no_blur_duration, blur_duration, x1, y1, x2, y2):
     try:
-        # Define the exclusion zone
-        exclusion_zone = get_exclusion_zone()
-        x1, y1, x2, y2 = exclusion_zone
-
         # Process video frames
         cap = cv2.VideoCapture(input_video)
         fps = int(cap.get(cv2.CAP_PROP_FPS))
@@ -105,13 +95,14 @@ def start_gui():
         try:
             no_blur_duration = int(no_blur_duration_var.get())
             blur_duration = int(blur_duration_var.get())
-            process_video(input_video, output_video, no_blur_duration, blur_duration)
+            x1, y1, x2, y2 = int(x1_var.get()), int(y1_var.get()), int(x2_var.get()), int(y2_var.get())
+            process_video(input_video, output_video, no_blur_duration, blur_duration, x1, y1, x2, y2)
         except ValueError:
-            messagebox.showerror("Error", "Invalid duration values. Please enter valid numbers.")
+            messagebox.showerror("Error", "Invalid values entered. Please enter valid numbers.")
 
     window = tk.Tk()
     window.title("Video Blurring Tool")
-    window.geometry("500x300")
+    window.geometry("600x400")  # Increased window size
 
     Label(window, text="Input Video File:").grid(row=0, column=0, padx=10, pady=10, sticky="w")
     input_file_var = tk.StringVar()
@@ -137,7 +128,25 @@ def start_gui():
     blur_duration_var = tk.StringVar(value="20")
     Spinbox(window, from_=1, to=60, textvariable=blur_duration_var).grid(row=5, column=1, padx=10, pady=10)
 
-    Button(window, text="Process Video", command=process_video_with_gui).grid(row=6, column=1, pady=20)
+    # Coordinates for the exclusion zone
+    Label(window, text="Exclusion Zone Coordinates:").grid(row=6, column=0, padx=10, pady=10, sticky="w")
+    Label(window, text="x1:").grid(row=7, column=0, padx=10, sticky="e")
+    x1_var = tk.StringVar(value="50")
+    Entry(window, textvariable=x1_var, width=10).grid(row=7, column=1, padx=10, pady=5, sticky="w")
+
+    Label(window, text="y1:").grid(row=8, column=0, padx=10, sticky="e")
+    y1_var = tk.StringVar(value="50")
+    Entry(window, textvariable=y1_var, width=10).grid(row=8, column=1, padx=10, pady=5, sticky="w")
+
+    Label(window, text="x2:").grid(row=7, column=2, padx=10, sticky="e")
+    x2_var = tk.StringVar(value="250")
+    Entry(window, textvariable=x2_var, width=10).grid(row=7, column=3, padx=10, pady=5, sticky="w")
+
+    Label(window, text="y2:").grid(row=8, column=2, padx=10, sticky="e")
+    y2_var = tk.StringVar(value="250")
+    Entry(window, textvariable=y2_var, width=10).grid(row=8, column=3, padx=10, pady=5, sticky="w")
+
+    Button(window, text="Process Video", command=process_video_with_gui).grid(row=9, column=1, pady=20)
 
     window.mainloop()
 
