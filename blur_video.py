@@ -1,7 +1,7 @@
 import cv2
 import os
 import tkinter as tk
-from tkinter import messagebox
+from tkinter import messagebox, filedialog
 from tkinter import ttk
 import moviepy.editor as mp
 
@@ -14,7 +14,7 @@ if not os.path.exists(videos_dir):
     os.makedirs(videos_dir)
 
 # Function to process the video
-def process_video(input_name, output_name, non_blur_duration, blur_duration):
+def process_video(input_name, output_name, non_blur_duration, blur_duration, output_dir):
     # Default to looking in the 'videos' folder
     input_video = os.path.join(videos_dir, input_name)
 
@@ -27,8 +27,8 @@ def process_video(input_name, output_name, non_blur_duration, blur_duration):
     if not output_name.endswith(('.mp4', '.mkv', '.avi')):
         output_name += ".mp4"
 
-    # Check the output video path in the 'videos' folder
-    output_video = os.path.join(videos_dir, output_name)
+    # Check the full output video path
+    output_video = os.path.join(output_dir, output_name)
 
     try:
         # Open the input video using moviepy
@@ -52,7 +52,7 @@ def process_video(input_name, output_name, non_blur_duration, blur_duration):
         final_clip = blurred_clip.set_audio(audio)
         final_clip.write_videofile(output_video, codec="libx264", audio_codec="aac")
 
-        messagebox.showinfo("Success", f"Video successfully saved to '{output_name}' in the 'videos' folder!")
+        messagebox.showinfo("Success", f"Video successfully saved to '{output_video}'!")
     except Exception as e:
         messagebox.showerror("Error", f"An error occurred: {e}")
 
@@ -63,11 +63,17 @@ def create_gui():
         output_name = output_entry.get().strip()
         non_blur_duration = int(non_blur_spinner.get())
         blur_duration = int(blur_spinner.get())
-        
+        output_dir = output_dir_var.get()
+
         if not input_name or not output_name:
             messagebox.showerror("Error", "Both input and output file names are required.")
         else:
-            process_video(input_name, output_name, non_blur_duration, blur_duration)
+            process_video(input_name, output_name, non_blur_duration, blur_duration, output_dir)
+
+    def select_output_dir():
+        selected_dir = filedialog.askdirectory(initialdir=videos_dir, title="Select Output Directory")
+        if selected_dir:
+            output_dir_var.set(selected_dir)
 
     # Main Tkinter window
     root = tk.Tk()
@@ -86,21 +92,29 @@ def create_gui():
     # Default extension label
     tk.Label(root, text="* If no extension is provided, '.mp4' will be used by default.", fg="gray").grid(row=2, column=0, columnspan=2, padx=10, pady=5)
 
+    # Output directory label and selection
+    tk.Label(root, text="Output Directory:").grid(row=3, column=0, padx=10, pady=5, sticky="w")
+    output_dir_var = tk.StringVar(value=videos_dir)
+    output_dir_entry = tk.Entry(root, textvariable=output_dir_var, width=40, state="readonly")
+    output_dir_entry.grid(row=3, column=1, padx=10, pady=5, sticky="w")
+    output_dir_button = tk.Button(root, text="Browse", command=select_output_dir)
+    output_dir_button.grid(row=3, column=2, padx=10, pady=5, sticky="w")
+
     # Non-blur duration label and spinner
-    tk.Label(root, text="Non-Blur Period (seconds):").grid(row=3, column=0, padx=10, pady=5, sticky="w")
+    tk.Label(root, text="Non-Blur Period (seconds):").grid(row=4, column=0, padx=10, pady=5, sticky="w")
     non_blur_spinner = ttk.Spinbox(root, from_=1, to=60, width=5)
     non_blur_spinner.set(20)  # Default value
-    non_blur_spinner.grid(row=3, column=1, padx=10, pady=5, sticky="w")
+    non_blur_spinner.grid(row=4, column=1, padx=10, pady=5, sticky="w")
 
     # Blur duration label and spinner
-    tk.Label(root, text="Blur Period (seconds):").grid(row=4, column=0, padx=10, pady=5, sticky="w")
+    tk.Label(root, text="Blur Period (seconds):").grid(row=5, column=0, padx=10, pady=5, sticky="w")
     blur_spinner = ttk.Spinbox(root, from_=1, to=60, width=5)
     blur_spinner.set(20)  # Default value
-    blur_spinner.grid(row=4, column=1, padx=10, pady=5, sticky="w")
+    blur_spinner.grid(row=5, column=1, padx=10, pady=5, sticky="w")
 
     # Process button
     process_button = tk.Button(root, text="Process Video", command=on_process)
-    process_button.grid(row=5, column=0, columnspan=2, pady=10)
+    process_button.grid(row=6, column=0, columnspan=3, pady=10)
 
     # Start the Tkinter event loop
     root.mainloop()
