@@ -219,15 +219,33 @@ def start_gui():
     y1_var = tk.IntVar(value=100)
     x2_var = tk.IntVar(value=300)
     y2_var = tk.IntVar(value=300)
-    x1_entry = Spinbox(window, from_=0, to=width, textvariable=x1_var, width=5)
-    y1_entry = Spinbox(window, from_=0, to=height, textvariable=y1_var, width=5)
-    x2_entry = Spinbox(window, from_=0, to=width, textvariable=x2_var, width=5)
-    y2_entry = Spinbox(window, from_=0, to=height, textvariable=y2_var, width=5)
 
-    x1_entry.grid(row=7, column=1, padx=5, pady=10)
-    y1_entry.grid(row=7, column=2, padx=5, pady=10)
-    x2_entry.grid(row=7, column=3, padx=5, pady=10)
-    y2_entry.grid(row=7, column=4, padx=5, pady=10)
+    # Create a frame for better organization of the coordinate spinboxes
+    coordinates_frame = tk.Frame(window)
+    coordinates_frame.grid(row=7, column=1, columnspan=4, padx=10, pady=10)
+
+    # X1 coordinate
+    Label(coordinates_frame, text="x1:").grid(row=0, column=0, padx=5, pady=5, sticky="w")
+    x1_entry = Spinbox(coordinates_frame, from_=0, to=width, textvariable=x1_var, width=5)
+    x1_entry.grid(row=0, column=1, padx=5, pady=5)
+
+    # Y1 coordinate
+    Label(coordinates_frame, text="y1:").grid(row=0, column=2, padx=5, pady=5, sticky="w")
+    y1_entry = Spinbox(coordinates_frame, from_=0, to=height, textvariable=y1_var, width=5)
+    y1_entry.grid(row=0, column=3, padx=5, pady=5)
+
+    # X2 coordinate
+    Label(coordinates_frame, text="x2:").grid(row=1, column=0, padx=5, pady=5, sticky="w")
+    x2_entry = Spinbox(coordinates_frame, from_=0, to=width, textvariable=x2_var, width=5)
+    x2_entry.grid(row=1, column=1, padx=5, pady=5)
+
+    # Y2 coordinate
+    Label(coordinates_frame, text="y2:").grid(row=1, column=2, padx=5, pady=5, sticky="w")
+    y2_entry = Spinbox(coordinates_frame, from_=0, to=height, textvariable=y2_var, width=5)
+    y2_entry.grid(row=1, column=3, padx=5, pady=5)
+
+
+
 
     # Process video button
     Button(window, text="Process Video", command=process_video_with_gui).grid(row=8, column=1, padx=10, pady=10)
